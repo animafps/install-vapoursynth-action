@@ -55,7 +55,7 @@ export async function run(config) {
     const zimg_branch = config.zimg_branch;
 
     await build("https://github.com/sekrit-twc/zimg", "zimg", zimg_branch, [], false);
-    await build("https://github.com/vapoursynth/vapoursynth", "vs", vs_branch, ["--disable-vsscript", "--disable-python-module"], {
+    await build("https://github.com/vapoursynth/vapoursynth", "vs", vs_branch, [], {
         pre: async()=>{
             core.info("Ensuring existence of nasm...");
             await exec("sudo", ["apt-get", "install", "--yes", "nasm"]);

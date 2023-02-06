@@ -5,7 +5,7 @@ export const VS_ALIASES = {
 };
 
 export const VS_VERSIONS = {
-    "61" : {
+    "61": {
         pypi_version: "61",
         minor: "61",
         vs_branch: "R61",
