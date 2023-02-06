@@ -1,10 +1,16 @@
 export const VS_ALIASES = {
-    "latest": "51",
+    "latest": "61",
     "47": "47.2",
     "45": "45.0"
 };
 
 export const VS_VERSIONS = {
+    "61" : {
+        pypi_version: "61",
+        minor: "61",
+        vs_branch: "R61",
+        zimg_branch: "v3.0"
+    },
     "51": {
         pypi_version: "51",
         minor: "51",
