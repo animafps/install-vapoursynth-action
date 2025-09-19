@@ -29,21 +29,10 @@ async function downloadAndCompile(link, id, branch, configures=[], cbs={}) {
     }
 }
 
-async function cache(id, branch) {
-
-    const container = get_container_from_id(id);
-    const artifact_name_suffix = [branch, "ubuntu", await lsb_version(), "compiled.tar"].join("--")
-
-    await io.mkdirP("/tmp/artifacts");
-    const tar_path = "/tmp/artifacts/" + id + " -- " + artifact_name_suffix;
-    await exec("tar", ["-zcf", tar_path, container]);
-}
-
 async function build(link, id, branch, configures="", cbs={}) {
     core.startGroup("Installing Building Tool for: " + id+"@"+branch);
    try {
         await downloadAndCompile(link, id, branch, configures, cbs);
-        await cache(id, branch);
     } finally {
         core.endGroup();
     }

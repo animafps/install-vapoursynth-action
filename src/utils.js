@@ -11,7 +11,7 @@ export async function lsb_version() {
     for (let d of data.split("\n")) {
         let [n, v] = d.split("=");
         if (n != "DISTRIB_RELEASE") continue;
-        return v;
+        return v.replace(/['"]/g, '');
     }
 }
 
