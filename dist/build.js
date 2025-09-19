@@ -69,10 +69,10 @@ async function run(config) {
         pre: async()=>{
             core.info("Ensuring existence of nasm...");
             await exec("sudo", ["apt-get", "install", "--yes", "nasm"]);
+            await exec("pip", ["install", "cython", "wheel"]);
         },
         post: async(path)=>{
             core.info("Building python package.");
-            await exec("pip", ["install", "cython", "wheel"]);
             await exec("python", ["setup.py", "bdist_wheel"], {cwd: path});
             await exec("pip", ["install", "."], {cwd: path});
         }
