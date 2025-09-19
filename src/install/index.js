@@ -24,13 +24,18 @@ async function tryRestoreCache(version) {
 
     core.info(`Attempting to restore cache with keys: ${cacheKeys.join(', ')}`);
 
-    const cacheKey = await cache.restoreCache(['/usr/local', '/usr/lib', '/usr/include'], cacheKeys[0], cacheKeys);
+    try {
+        const cacheKey = await cache.restoreCache(['/usr/local', '/usr/lib', '/usr/include'], cacheKeys[0], cacheKeys);
 
-    if (cacheKey) {
-        core.info(`Cache restored from key: ${cacheKey}`);
-        return true;
-    } else {
-        core.info('No cache found, will build from source');
+        if (cacheKey) {
+            core.info(`Cache restored from key: ${cacheKey}`);
+            return true;
+        } else {
+            core.info('No cache found, will build from source');
+            return false;
+        }
+    } catch (error) {
+        core.warning(`Cache service unavailable: ${error.message}. Building from source.`);
         return false;
     }
 }
@@ -48,7 +53,12 @@ async function saveCache(version) {
     const cacheKey = `vapoursynth-${vs_branch}-zimg-${zimg_branch}-ubuntu-${ubuntu_version}`;
 
     core.info(`Saving cache with key: ${cacheKey}`);
-    await cache.saveCache(['/usr/local', '/usr/lib', '/usr/include'], cacheKey);
+    try {
+        await cache.saveCache(['/usr/local', '/usr/lib', '/usr/include'], cacheKey);
+        core.info('Cache saved successfully');
+    } catch (error) {
+        core.warning(`Failed to save cache: ${error.message}`);
+    }
 }
 
 (async()=>{
