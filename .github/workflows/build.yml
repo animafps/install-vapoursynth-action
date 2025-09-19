@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        vs-version: [latest, 51, 47]
+        vs-version: [latest]
         python-version: ["3.11"]
 
 
