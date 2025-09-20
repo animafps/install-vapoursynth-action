@@ -30,7 +30,7 @@ async function downloadAndCompile(link, id, branch, configures=[], cbs={}) {
 
     core.info("Compiling " + id);
     await exec('./autogen.sh', [], {cwd: container});
-    await exec('./configure', ["--prefix=/home/runner/"].concat(configures), {cwd: container});
+    await exec('./configure', `--prefix=/home/runner/${configures}/`, {cwd: container});
     await exec("make", [], {cwd: container});
     await exec("sudo", ["make", "install"], {cwd: container});
 
@@ -53,13 +53,13 @@ async function run(config) {
     const vs_branch = config.vs_branch;
     const zimg_branch = config.zimg_branch;
 
-    await build("https://github.com/sekrit-twc/zimg", "zimg", zimg_branch, ["zimg"], false);
+    await build("https://github.com/sekrit-twc/zimg", "zimg", zimg_branch, "zimg", false);
 
     // Set environment for VapourSynth to find zimg
     process.env.PKG_CONFIG_PATH = `/home/runner/zimg/lib/pkgconfig:${process.env.PKG_CONFIG_PATH || ''}`;
     process.env.LD_LIBRARY_PATH = `/home/runner/zimg/lib:${process.env.LD_LIBRARY_PATH || ''}`;
 
-    await build("https://github.com/vapoursynth/vapoursynth", "vs", vs_branch, ["vapoursynth"], {
+    await build("https://github.com/vapoursynth/vapoursynth", "vs", vs_branch, "vapoursynth", {
         pre: async()=>{
             core.info("Ensuring existence of nasm...");
             await exec("sudo", ["apt-get", "install", "--yes", "nasm"]);
