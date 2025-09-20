@@ -58,7 +58,7 @@ async function downloadAndCompile(link, id, branch, configures=[], cbs={}) {
 
     core.info("Compiling " + id);
     await exec('./autogen.sh', [], {cwd: container});
-    await exec('./configure', ["--prefix=/usr"].concat(configures), {cwd: container});
+    await exec('./configure', ["--prefix=/home/runner/"].concat(configures), {cwd: container});
     await exec("make", [], {cwd: container});
     await exec("sudo", ["make", "install"], {cwd: container});
 
@@ -81,8 +81,13 @@ async function run(config) {
     const vs_branch = config.vs_branch;
     const zimg_branch = config.zimg_branch;
 
-    await build("https://github.com/sekrit-twc/zimg", "zimg", zimg_branch, [], false);
-    await build("https://github.com/vapoursynth/vapoursynth", "vs", vs_branch, [], {
+    await build("https://github.com/sekrit-twc/zimg", "zimg", zimg_branch, ["zimg"], false);
+
+    // Set environment for VapourSynth to find zimg
+    process.env.PKG_CONFIG_PATH = `/home/runner/zimg/lib/pkgconfig:${process.env.PKG_CONFIG_PATH || ''}`;
+    process.env.LD_LIBRARY_PATH = `/home/runner/zimg/lib:${process.env.LD_LIBRARY_PATH || ''}`;
+
+    await build("https://github.com/vapoursynth/vapoursynth", "vs", vs_branch, ["vapoursynth"], {
         pre: async()=>{
             core.info("Ensuring existence of nasm...");
             await exec("sudo", ["apt-get", "install", "--yes", "nasm"]);
@@ -7800,10 +7805,29 @@ function ensureSecureConnection(request, options) {
 /* harmony export */   e: () => (/* binding */ run)
 /* harmony export */ });
 const { exec } = __webpack_require__(6665);
-
+const core = __webpack_require__(6977);
+const path = __webpack_require__(6928);
 
 async function run(config) {
-    await exec('pip', ['install', 'vapoursynth-portable==' + config.pypi_version]);
+    const vsVersion = config.vs_branch;
+    const downloadUrl = `https://github.com/vapoursynth/vapoursynth/releases/download/${vsVersion}/VapourSynth64-Portable-${vsVersion}.zip`;
+    const downloadPath = path.join(process.env.RUNNER_TEMP || '/tmp', `vapoursynth-${vsVersion}.zip`);
+    const extractPath = path.join(process.env.RUNNER_TEMP || '/tmp', `vapoursynth-${vsVersion}`);
+
+    core.info(`Downloading VapourSynth from ${downloadUrl}`);
+
+    // Download the portable zip file
+    await exec('curl', ['-L', '-o', downloadPath, downloadUrl]);
+
+    // Extract the zip file
+    core.info(`Extracting VapourSynth to ${extractPath}`);
+    await exec('powershell', ['-Command', `Expand-Archive -Path '${downloadPath}' -DestinationPath '${extractPath}' -Force`]);
+
+    // Add VapourSynth to PATH
+    const vsPath = path.join(extractPath, 'VapourSynth64-Portable');
+    core.addPath(vsPath);
+
+    core.info('VapourSynth installation completed');
 }
 
 /***/ }),
@@ -83059,10 +83083,13 @@ async function tryRestoreCache(version) {
     core.info(`Attempting to restore cache with keys: ${cacheKeys.join(', ')}`);
 
     try {
-        const cacheKey = await cache.restoreCache(['/usr/local', '/usr/lib', '/usr/include'], cacheKeys[0], cacheKeys);
+        const cacheKey = await cache.restoreCache(['/home/runner/zimg', '/home/runner/vapoursynth'], cacheKeys[0], cacheKeys);
 
         if (cacheKey) {
             core.info(`Cache restored from key: ${cacheKey}`);
+            core.addPath('/home/runner/zimg/bin');
+            core.addPath('/home/runner/vapoursynth/bin');
+            core.exportVariable('LD_LIBRARY_PATH', '/home/runner/zimg/lib:/home/runner/vapoursynth/lib:' + (install_process.env.LD_LIBRARY_PATH || ''));
             return true;
         } else {
             core.info('No cache found, will build from source');
@@ -83088,7 +83115,7 @@ async function saveCache(version) {
 
     core.info(`Saving cache with key: ${cacheKey}`);
     try {
-        await cache.saveCache(['/usr/local', '/usr/lib', '/usr/include'], cacheKey);
+        await cache.saveCache(['/home/runner/zimg', '/home/runner/vapoursynth'], cacheKey);
         core.info('Cache saved successfully');
     } catch (error) {
         core.warning(`Failed to save cache: ${error.message}`);
@@ -83117,6 +83144,9 @@ async function saveCache(version) {
             await (__webpack_require__(854)/* .run */ .e)(version);
         } else {
             await (__webpack_require__(9)/* .run */ .e)(version);
+            core.addPath('/home/runner/zimg/bin');
+            core.addPath('/home/runner/vapoursynth/bin');
+            core.exportVariable('LD_LIBRARY_PATH', '/home/runner/zimg/lib:/home/runner/vapoursynth/lib:' + (install_process.env.LD_LIBRARY_PATH || ''));
         }
 
         // Save to cache after successful build

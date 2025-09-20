@@ -25,10 +25,13 @@ async function tryRestoreCache(version) {
     core.info(`Attempting to restore cache with keys: ${cacheKeys.join(', ')}`);
 
     try {
-        const cacheKey = await cache.restoreCache(['/usr/local', '/usr/lib', '/usr/include'], cacheKeys[0], cacheKeys);
+        const cacheKey = await cache.restoreCache(['/home/runner/zimg', '/home/runner/vapoursynth'], cacheKeys[0], cacheKeys);
 
         if (cacheKey) {
             core.info(`Cache restored from key: ${cacheKey}`);
+            core.addPath('/home/runner/zimg/bin');
+            core.addPath('/home/runner/vapoursynth/bin');
+            core.exportVariable('LD_LIBRARY_PATH', '/home/runner/zimg/lib:/home/runner/vapoursynth/lib:' + (process.env.LD_LIBRARY_PATH || ''));
             return true;
         } else {
             core.info('No cache found, will build from source');
@@ -54,7 +57,7 @@ async function saveCache(version) {
 
     core.info(`Saving cache with key: ${cacheKey}`);
     try {
-        await cache.saveCache(['/usr/local', '/usr/lib', '/usr/include'], cacheKey);
+        await cache.saveCache(['/home/runner/zimg', '/home/runner/vapoursynth'], cacheKey);
         core.info('Cache saved successfully');
     } catch (error) {
         core.warning(`Failed to save cache: ${error.message}`);
@@ -83,6 +86,9 @@ async function saveCache(version) {
             await require('../build/windows').run(version);
         } else {
             await require('../build/linux').run(version);
+            core.addPath('/home/runner/zimg/bin');
+            core.addPath('/home/runner/vapoursynth/bin');
+            core.exportVariable('LD_LIBRARY_PATH', '/home/runner/zimg/lib:/home/runner/vapoursynth/lib:' + (process.env.LD_LIBRARY_PATH || ''));
         }
 
         // Save to cache after successful build
