@@ -93,6 +93,11 @@ async function saveCache(version) {
 
         // Save to cache after successful build
         await saveCache(version);
+    } else if (process.platform != 'win32') {
+        core.addPath('/home/runner/zimg/bin');
+        core.addPath('/home/runner/vapoursynth/bin');
+        core.exportVariable('LD_LIBRARY_PATH', '/home/runner/zimg/lib:/home/runner/vapoursynth/lib:' + (process.env.LD_LIBRARY_PATH || ''));
+        await exec("pip", ["install", "cython", "wheel"]);
     }
 
     core.info('VapourSynth installation completed successfully');

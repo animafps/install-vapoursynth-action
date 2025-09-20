@@ -56,6 +56,9 @@ export async function run(config) {
             await exec("pip", ["install", "cython", "wheel"]);
         },
         post: async(path)=>{
+            process.env.PKG_CONFIG_PATH = `/home/runner/vapoursynth/lib/pkgconfig:${process.env.PKG_CONFIG_PATH || ''}`;
+            process.env.LD_LIBRARY_PATH = `/home/runner/vapoursynth/lib:${process.env.LD_LIBRARY_PATH || ''}`;
+
             core.info("Building python package.");
             await exec("python", ["setup.py", "bdist_wheel"], {cwd: path});
             await exec("pip", ["install", "."], {cwd: path});

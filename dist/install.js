@@ -94,6 +94,9 @@ async function run(config) {
             await exec("pip", ["install", "cython", "wheel"]);
         },
         post: async(path)=>{
+            process.env.PKG_CONFIG_PATH = `/home/runner/vapoursynth/lib/pkgconfig:${process.env.PKG_CONFIG_PATH || ''}`;
+            process.env.LD_LIBRARY_PATH = `/home/runner/vapoursynth/lib:${process.env.LD_LIBRARY_PATH || ''}`;
+
             core.info("Building python package.");
             await exec("python", ["setup.py", "bdist_wheel"], {cwd: path});
             await exec("pip", ["install", "."], {cwd: path});
@@ -83151,6 +83154,11 @@ async function saveCache(version) {
 
         // Save to cache after successful build
         await saveCache(version);
+    } else if (install_process.platform != 'win32') {
+        core.addPath('/home/runner/zimg/bin');
+        core.addPath('/home/runner/vapoursynth/bin');
+        core.exportVariable('LD_LIBRARY_PATH', '/home/runner/zimg/lib:/home/runner/vapoursynth/lib:' + (install_process.env.LD_LIBRARY_PATH || ''));
+        await exec("pip", ["install", "cython", "wheel"]);
     }
 
     core.info('VapourSynth installation completed successfully');
