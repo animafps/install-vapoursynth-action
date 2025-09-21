@@ -94,12 +94,15 @@ async function run(config) {
             await exec("pip", ["install", "cython", "wheel"]);
         },
         post: async(path)=>{
-            process.env.PKG_CONFIG_PATH = `/home/runner/vapoursynth/lib/pkgconfig:${process.env.PKG_CONFIG_PATH || ''}`;
-            process.env.LD_LIBRARY_PATH = `/home/runner/vapoursynth/lib:${process.env.LD_LIBRARY_PATH || ''}`;
+            const buildEnv = {
+                ...process.env,
+                PKG_CONFIG_PATH: `/home/runner/vapoursynth/lib/pkgconfig:/home/runner/zimg/lib/pkgconfig:${process.env.PKG_CONFIG_PATH || ''}`,
+                LD_LIBRARY_PATH: `/home/runner/vapoursynth/lib:/home/runner/zimg/lib:${process.env.LD_LIBRARY_PATH || ''}`
+            };
 
             core.info("Building python package.");
-            await exec("python", ["setup.py", "bdist_wheel"], {cwd: path});
-            await exec("pip", ["install", "."], {cwd: path});
+            await exec("python", ["setup.py", "bdist_wheel"], {cwd: path, env: buildEnv});
+            await exec("pip", ["install", "."], {cwd: path, env: buildEnv});
         }
     });
 }
