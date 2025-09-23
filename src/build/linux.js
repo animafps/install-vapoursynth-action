@@ -59,7 +59,8 @@ export async function run(config) {
             const buildEnv = {
                 ...process.env,
                 PKG_CONFIG_PATH: `/home/runner/vapoursynth/lib/pkgconfig:/home/runner/zimg/lib/pkgconfig:${process.env.PKG_CONFIG_PATH || ''}`,
-                LD_LIBRARY_PATH: `/home/runner/vapoursynth/lib:/home/runner/zimg/lib:${process.env.LD_LIBRARY_PATH || ''}`
+                LD_LIBRARY_PATH: `/home/runner/vapoursynth/lib:/home/runner/zimg/lib:${process.env.LD_LIBRARY_PATH || ''}`,
+                LIBRARY_PATH: `/home/runner/vapoursynth/lib:/home/runner/zimg/lib:${process.env.LIBRARY_PATH || ''}`
             };
 
             core.info("Building python package.");
