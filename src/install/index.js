@@ -1,5 +1,6 @@
 const core = require('@actions/core');
 const cache = require('@actions/cache');
+const { exec } = require('@actions/exec');
 const process = require('process');
 
 const { VS_ALIASES, VS_VERSIONS } = require('../vs_versions');

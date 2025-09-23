@@ -83065,6 +83065,7 @@ function exponentialRetryPolicy(options = {}) {
 var __webpack_exports__ = {};
 const core = __webpack_require__(6977);
 const cache = __webpack_require__(7921);
+const { exec } = __webpack_require__(6665);
 const install_process = __webpack_require__(932);
 
 const { VS_ALIASES, VS_VERSIONS } = __webpack_require__(5849);
