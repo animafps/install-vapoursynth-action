@@ -83098,6 +83098,8 @@ async function tryRestoreCache(version) {
             core.addPath('/home/runner/zimg/bin');
             core.addPath('/home/runner/vapoursynth/bin');
             core.exportVariable('LD_LIBRARY_PATH', '/home/runner/zimg/lib:/home/runner/vapoursynth/lib:' + (install_process.env.LD_LIBRARY_PATH || ''));
+            core.exportVariable('LIBRARY_PATH', '/home/runner/zimg/lib:/home/runner/vapoursynth/lib:' + (install_process.env.LIBRARY_PATH || ''));
+            core.exportVariable('PKG_CONFIG_PATH', '/home/runner/vapoursynth/lib/pkgconfig:/home/runner/zimg/lib/pkgconfig:' + (install_process.env.PKG_CONFIG_PATH || ''));
             return true;
         } else {
             core.info('No cache found, will build from source');
@@ -83155,6 +83157,8 @@ async function saveCache(version) {
             core.addPath('/home/runner/zimg/bin');
             core.addPath('/home/runner/vapoursynth/bin');
             core.exportVariable('LD_LIBRARY_PATH', '/home/runner/zimg/lib:/home/runner/vapoursynth/lib:' + (install_process.env.LD_LIBRARY_PATH || ''));
+            core.exportVariable('LIBRARY_PATH', '/home/runner/zimg/lib:/home/runner/vapoursynth/lib:' + (install_process.env.LIBRARY_PATH || ''));
+            core.exportVariable('PKG_CONFIG_PATH', '/home/runner/vapoursynth/lib/pkgconfig:/home/runner/zimg/lib/pkgconfig:' + (install_process.env.PKG_CONFIG_PATH || ''));
         }
 
         // Save to cache after successful build
@@ -83163,6 +83167,8 @@ async function saveCache(version) {
         core.addPath('/home/runner/zimg/bin');
         core.addPath('/home/runner/vapoursynth/bin');
         core.exportVariable('LD_LIBRARY_PATH', '/home/runner/zimg/lib:/home/runner/vapoursynth/lib:' + (install_process.env.LD_LIBRARY_PATH || ''));
+        core.exportVariable('LIBRARY_PATH', '/home/runner/zimg/lib:/home/runner/vapoursynth/lib:' + (install_process.env.LIBRARY_PATH || ''));
+        core.exportVariable('PKG_CONFIG_PATH', '/home/runner/vapoursynth/lib/pkgconfig:/home/runner/zimg/lib/pkgconfig:' + (install_process.env.PKG_CONFIG_PATH || ''));
         await exec("pip", ["install", "cython", "wheel"]);
     }
 
