@@ -70,7 +70,30 @@ export async function run(config) {
             // Copy wheel to cache directory
             core.info("Copying wheel to cache directory.");
             await exec("mkdir", ["-p", "/home/runner/vs-wheel"]);
-            await exec("cp", [`${path}/dist/*.whl`, "/home/runner/vs-wheel/"], {shell: true});
+
+            // Use find to locate and copy wheel files
+            const { readdir } = require('fs').promises;
+            const fs = require('fs');
+            const pathModule = require('path');
+
+            try {
+                const distPath = pathModule.join(path, 'dist');
+                if (fs.existsSync(distPath)) {
+                    const files = await readdir(distPath);
+                    const wheelFiles = files.filter(file => file.endsWith('.whl'));
+
+                    for (const wheelFile of wheelFiles) {
+                        const sourcePath = pathModule.join(distPath, wheelFile);
+                        const destPath = pathModule.join('/home/runner/vs-wheel', wheelFile);
+                        await exec("cp", [sourcePath, destPath]);
+                        core.info(`Copied wheel: ${wheelFile}`);
+                    }
+                } else {
+                    core.warning(`Dist directory not found: ${distPath}`);
+                }
+            } catch (error) {
+                core.warning(`Failed to copy wheel files: ${error.message}`);
+            }
         }
     });
 }
