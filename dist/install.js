@@ -104,6 +104,11 @@ async function run(config) {
             core.info("Building python package.");
             await exec("python", ["setup.py", "bdist_wheel"], {cwd: path, env: buildEnv});
             await exec("pip", ["install", "."], {cwd: path, env: buildEnv});
+
+            // Copy wheel to cache directory
+            core.info("Copying wheel to cache directory.");
+            await exec("mkdir", ["-p", "/home/runner/vs-wheel"]);
+            await exec("cp", [`${path}/dist/*.whl`, "/home/runner/vs-wheel/"], {shell: true});
         }
     });
 }
@@ -83091,7 +83096,7 @@ async function tryRestoreCache(version) {
     core.info(`Attempting to restore cache with keys: ${cacheKeys.join(', ')}`);
 
     try {
-        const cacheKey = await cache.restoreCache(['/home/runner/zimg', '/home/runner/vapoursynth'], cacheKeys[0], cacheKeys);
+        const cacheKey = await cache.restoreCache(['/home/runner/zimg', '/home/runner/vapoursynth', '/home/runner/vs-wheel'], cacheKeys[0], cacheKeys);
 
         if (cacheKey) {
             core.info(`Cache restored from key: ${cacheKey}`);
@@ -83125,7 +83130,7 @@ async function saveCache(version) {
 
     core.info(`Saving cache with key: ${cacheKey}`);
     try {
-        await cache.saveCache(['/home/runner/zimg', '/home/runner/vapoursynth'], cacheKey);
+        await cache.saveCache(['/home/runner/zimg', '/home/runner/vapoursynth', '/home/runner/vs-wheel'], cacheKey);
         core.info('Cache saved successfully');
     } catch (error) {
         core.warning(`Failed to save cache: ${error.message}`);
@@ -83164,12 +83169,21 @@ async function saveCache(version) {
         // Save to cache after successful build
         await saveCache(version);
     } else if (install_process.platform != 'win32') {
-        core.addPath('/home/runner/zimg/bin');
-        core.addPath('/home/runner/vapoursynth/bin');
-        core.exportVariable('LD_LIBRARY_PATH', '/home/runner/zimg/lib:/home/runner/vapoursynth/lib:' + (install_process.env.LD_LIBRARY_PATH || ''));
-        core.exportVariable('LIBRARY_PATH', '/home/runner/zimg/lib:/home/runner/vapoursynth/lib:' + (install_process.env.LIBRARY_PATH || ''));
-        core.exportVariable('PKG_CONFIG_PATH', '/home/runner/vapoursynth/lib/pkgconfig:/home/runner/zimg/lib/pkgconfig:' + (install_process.env.PKG_CONFIG_PATH || ''));
         await exec("pip", ["install", "cython", "wheel"]);
+        /// Install VapourSynth Python bindings to ensure they are available
+        const { readdir } = (__webpack_require__(9896).promises);
+        try {
+            const wheelFiles = await readdir('/home/runner/vs-wheel');
+            const wheelFile = wheelFiles.find(file => file.endsWith('.whl'));
+            if (wheelFile) {
+                core.info(`Installing cached wheel: ${wheelFile}`);
+                await exec("pip", ["install", `/home/runner/vs-wheel/${wheelFile}`]);
+            } else {
+                core.warning('No wheel file found in cache, Python bindings may not be available');
+            }
+        } catch (error) {
+            core.warning(`Failed to install cached wheel: ${error.message}`);
+        }
     }
 
     core.info('VapourSynth installation completed successfully');

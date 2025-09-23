@@ -66,6 +66,11 @@ export async function run(config) {
             core.info("Building python package.");
             await exec("python", ["setup.py", "bdist_wheel"], {cwd: path, env: buildEnv});
             await exec("pip", ["install", "."], {cwd: path, env: buildEnv});
+
+            // Copy wheel to cache directory
+            core.info("Copying wheel to cache directory.");
+            await exec("mkdir", ["-p", "/home/runner/vs-wheel"]);
+            await exec("cp", [`${path}/dist/*.whl`, "/home/runner/vs-wheel/"], {shell: true});
         }
     });
 }
