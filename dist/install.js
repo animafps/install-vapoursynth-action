@@ -7844,6 +7844,7 @@ const core = __webpack_require__(6977);
 const path = __webpack_require__(6928);
 
 async function run(config) {
+    const { readdir } = (__webpack_require__(9896).promises);
     const vsVersion = config.vs_branch;
     const downloadUrl = `https://github.com/vapoursynth/vapoursynth/releases/download/${vsVersion}/VapourSynth64-Portable-${vsVersion}.zip`;
     const downloadPath = path.join(process.env.RUNNER_TEMP || '/tmp', `vapoursynth-${vsVersion}.zip`);
@@ -7857,7 +7858,11 @@ async function run(config) {
     // Extract the zip file
     core.info(`Extracting VapourSynth to ${extractPath}`);
     await exec('powershell', ['-Command', `Expand-Archive -Path '${downloadPath}' -DestinationPath '${extractPath}' -Force`]);
-
+    
+    const wheelFiles = await readdir(`${extractPath}\\VapourSynth64-Portable\\wheel`);
+    const wheelFile = wheelFiles.find(file => file.endsWith('.whl'));
+            
+    await exec('cmd', ['pip install', `${extractPath}\\VapourSynth64-Portable\\wheel\\${wheelFile}`]);
     // Add VapourSynth to PATH
     const vsPath = path.join(extractPath, 'VapourSynth64-Portable');
     core.addPath(vsPath);
@@ -83187,10 +83192,10 @@ async function saveCache(version) {
             core.exportVariable('LD_LIBRARY_PATH', '/home/runner/zimg/lib:/home/runner/vapoursynth/lib:' + (install_process.env.LD_LIBRARY_PATH || ''));
             core.exportVariable('LIBRARY_PATH', '/home/runner/zimg/lib:/home/runner/vapoursynth/lib:' + (install_process.env.LIBRARY_PATH || ''));
             core.exportVariable('PKG_CONFIG_PATH', '/home/runner/vapoursynth/lib/pkgconfig:/home/runner/zimg/lib/pkgconfig:' + (install_process.env.PKG_CONFIG_PATH || ''));
+            // Save to cache after successful build
+            await saveCache(version);
         }
 
-        // Save to cache after successful build
-        await saveCache(version);
     } else if (install_process.platform != 'win32') {
         await exec("pip", ["install", "cython", "wheel"]);
         /// Install VapourSynth Python bindings to ensure they are available

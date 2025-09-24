@@ -94,10 +94,10 @@ async function saveCache(version) {
             core.exportVariable('LD_LIBRARY_PATH', '/home/runner/zimg/lib:/home/runner/vapoursynth/lib:' + (process.env.LD_LIBRARY_PATH || ''));
             core.exportVariable('LIBRARY_PATH', '/home/runner/zimg/lib:/home/runner/vapoursynth/lib:' + (process.env.LIBRARY_PATH || ''));
             core.exportVariable('PKG_CONFIG_PATH', '/home/runner/vapoursynth/lib/pkgconfig:/home/runner/zimg/lib/pkgconfig:' + (process.env.PKG_CONFIG_PATH || ''));
+            // Save to cache after successful build
+            await saveCache(version);
         }
 
-        // Save to cache after successful build
-        await saveCache(version);
     } else if (process.platform != 'win32') {
         await exec("pip", ["install", "cython", "wheel"]);
         /// Install VapourSynth Python bindings to ensure they are available
